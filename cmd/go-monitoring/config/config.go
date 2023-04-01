@@ -1,8 +1,9 @@
 package config
 
 type Check struct {
-	Name    string
-	Options map[string]string
+	Name     string
+	Schedule string
+	Options  map[string]string
 }
 
 type Target struct {
@@ -23,7 +24,8 @@ func LoadMockConfig() Config {
 				ConnectionInformation: "https://www.pjotrs.nl",
 				Checks: []Check{
 					{
-						Name: "httpupcheck",
+						Name:     "httpupcheck",
+						Schedule: "*/10 * * * * *",
 						Options: map[string]string{
 							"timeoutInSeconds": "3",
 						},

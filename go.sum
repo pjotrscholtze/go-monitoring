@@ -1,2 +1,4 @@
 github.com/pjotrscholtze/go-buildserver v0.0.0-20230328161714-91a0681b823d h1:t4Cd0SiGT9OWcm97U7psKj0StGZUbKXfX3beRjMy7Pk=
 github.com/pjotrscholtze/go-buildserver v0.0.0-20230328161714-91a0681b823d/go.mod h1:YRUlynwrCzD0ewPHOI/oh4pd4b3jlZJZ8X1vXQrT++s=
+github.com/robfig/cron/v3 v3.0.1 h1:WdRxkvbJztn8LMz/QEvLN5sBU+xKpSqwwUO1Pjr4qDs=
+github.com/robfig/cron/v3 v3.0.1/go.mod h1:eQICP3HwyT7UooqI/z+Ov+PtYAWygg1TEWWzGIFLtro=
