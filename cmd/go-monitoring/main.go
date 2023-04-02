@@ -11,6 +11,7 @@ import (
 	"github.com/jessevdk/go-flags"
 	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/checkmanager"
 	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/config"
+	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/controller"
 	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/entity"
 	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/informer"
 	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/repo"
@@ -84,6 +85,7 @@ func main() {
 		tcr.UpdateCheck(result, target, check)
 		fmt.Printf("via informer, we got %s, %s, %s\n", result.Message(), target.Name, check.Name)
 	})
+	controller.ConnectAPI(api, tcr)
 	cm := checkmanager.NewCheckManager(config.LoadMockConfig(), cui)
 	cm.ValidateConfig()
 	cm.Run()
