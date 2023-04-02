@@ -1,0 +1,68 @@
+openapi: 3.0.3
+info:
+  title: Go monitoring
+  version: 1.0.0
+paths:
+  /check:
+    get:
+      summary: List all checks
+      operationId: listAllChecks
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Check'
+  /check/{targetName}/{checkName}:
+    get:
+      summary: Get historical data of a check
+      operationId: getTargetChecks
+      parameters:
+        - name: targetName
+          in: path
+          description: Name of the target
+          required: true
+          schema:
+            type: string
+        - name: checkName
+          in: path
+          description: Name of the check
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CheckResult'
+components:
+  schemas:
+    Check:
+      type: object
+      properties:
+        TargetName:
+          type: string
+        CheckName:
+          type: string
+        Schedule:
+          type: string
+        LastCheckResult:
+          $ref: '#/components/schemas/CheckResult'
+    CheckResult:
+      type: object
+      properties:
+        Error:
+          type: string
+        Success:
+          type: boolean
+        LastCheck:
+          type: string
+        Message:
+          type: string
