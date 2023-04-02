@@ -8,6 +8,7 @@ import (
 	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/config"
 	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/entity"
 	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/informer"
+	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/repo"
 )
 
 // "github.com/pjotrscholtze/go-buildserver/cmd/go-buildserver/process"
@@ -19,7 +20,9 @@ func main() {
 	// 		println(s)
 	// 	})
 	cui := informer.NewCheckUpdateInformer()
+	tcr := repo.NewTargetCheckRepoInMemory(5)
 	cui.RegisterListenerFunc(func(result entity.Result, target config.Target, check config.Check) {
+		tcr.UpdateCheck(result, target, check)
 		fmt.Printf("via informer, we got %s, %s, %s\n", result.Message(), target.Name, check.Name)
 	})
 	cm := checkmanager.NewCheckManager(config.LoadMockConfig(), cui)
@@ -31,5 +34,9 @@ func main() {
 	// }
 	for {
 		time.Sleep(time.Second)
+		for _, tce := range tcr.List() {
+			println(" from main")
+			tce.Result.Log()
+		}
 	}
 }
