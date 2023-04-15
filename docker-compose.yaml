@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  web:
+    image: ghcr.io/gotify/server
+    ports:
+      - "8080:80"
+    # volumes:
+    #   - /var/gotify/data:/app/data
+    environment:
+      TZ: "Europe/Berlin"
+      GOTIFY_DEFAULTUSER_PASS: "custom"

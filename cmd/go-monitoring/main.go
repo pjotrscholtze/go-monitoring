@@ -7,6 +7,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gotify/go-api-client/v2/models"
+	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/gotifyservice"
+
 	"github.com/go-openapi/loads"
 	"github.com/jessevdk/go-flags"
 	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/checkmanager"
@@ -17,6 +20,11 @@ import (
 	"github.com/pjotrscholtze/go-monitoring/cmd/go-monitoring/repo"
 	"github.com/pjotrscholtze/go-monitoring/restapi"
 	"github.com/pjotrscholtze/go-monitoring/restapi/operations"
+)
+
+const (
+	gotifyURL        = "http://localhost:8080"
+	applicationToken = "Aq9Br2z3.2qYcS9"
 )
 
 // "github.com/pjotrscholtze/go-buildserver/cmd/go-buildserver/process"
@@ -83,7 +91,25 @@ func main() {
 	tcr := repo.NewTargetCheckRepoInMemory(5)
 	cui.RegisterListenerFunc(func(result entity.Result, target config.Target, check config.Check) {
 		tcr.UpdateCheck(result, target, check)
-		fmt.Printf("via informer, we got %s, %s, %s\n", result.Message(), target.Name, check.Name)
+		prio := 5
+		succesfull := "Not ok"
+		if result.Success() {
+			prio = 1
+			succesfull = "ok"
+		}
+
+		err := gotifyservice.NewGotifyService(gotifyURL, applicationToken).SendMessage(
+			&models.MessageExternal{
+				Title:    fmt.Sprintf("Target %s, check %s: %s\n", target.Name, check.Name, succesfull),
+				Message:  result.Message(),
+				Priority: prio,
+			})
+
+		if err != nil {
+			log.Fatalf("Could not send message %v", err)
+			return
+		}
+
 	})
 	controller.ConnectAPI(api, tcr)
 	cm := checkmanager.NewCheckManager(config.LoadMockConfig(), cui)
