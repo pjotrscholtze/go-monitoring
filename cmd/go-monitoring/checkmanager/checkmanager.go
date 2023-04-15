@@ -10,6 +10,23 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+type cronJobHelper struct {
+	target      config.Target
+	targetCheck config.Check
+	cm          *CheckManager
+}
+
+func (cjh cronJobHelper) Run() {
+	c, err := cjh.cm.getCheckByName(cjh.targetCheck.Name)
+	if err != nil {
+		log.Printf("Check with name '%s' does not exist! Please use a valid check name!", cjh.targetCheck.Name)
+		return
+	}
+	res := c.Perform(cjh.target.ConnectionInformation, cjh.targetCheck)
+	res.Log()
+	cjh.cm.checkUpdateInformer.Inform(res, cjh.target, cjh.targetCheck)
+}
+
 type CheckManager struct {
 	config              config.Config
 	checkUpdateInformer informer.CheckUpdateInformer
@@ -34,17 +51,11 @@ func (cm *CheckManager) Run() {
 
 	for _, target := range cm.config.Targets {
 		for _, targetCheck := range target.Checks {
-			cr.AddFunc(targetCheck.Schedule, func() {
-				c, err := cm.getCheckByName(targetCheck.Name)
-				if err != nil {
-					log.Printf("Check with name '%s' does not exist! Please use a valid check name!", targetCheck.Name)
-					return
-				}
-				res := c.Perform(target.ConnectionInformation, targetCheck)
-				res.Log()
-				cm.checkUpdateInformer.Inform(res, target, targetCheck)
+			cr.AddJob(targetCheck.Schedule, cronJobHelper{
+				target:      target,
+				targetCheck: targetCheck,
+				cm:          cm,
 			})
-			_ = targetCheck
 		}
 	}
 }

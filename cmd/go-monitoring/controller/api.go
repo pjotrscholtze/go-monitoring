@@ -13,7 +13,8 @@ func ConnectAPI(api *operations.GoMonitoringAPI, tcr repo.TargetCheckRepo) {
 	api.ListAllChecksHandler = operations.ListAllChecksHandlerFunc(func(lacp operations.ListAllChecksParams) middleware.Responder {
 
 		res := make([]*models.Check, 0)
-		for _, check := range tcr.List() {
+		checks := tcr.List()
+		for i, check := range checks {
 			lcrError := ""
 			if check.Result.Error() != nil {
 				lcrError = check.Result.Error().Error()
@@ -22,7 +23,7 @@ func ConnectAPI(api *operations.GoMonitoringAPI, tcr repo.TargetCheckRepo) {
 			lcrMessage := check.Result.Message()
 			lcrSuccess := check.Result.Success()
 			res = append(res, &models.Check{
-				CheckName: &check.Check.Name,
+				CheckName: &checks[i].Check.Name,
 				LastCheckResult: &models.CheckResult{
 					Error:     &lcrError,
 					LastCheck: &lcrLC,

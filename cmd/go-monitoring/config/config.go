@@ -72,6 +72,15 @@ func LoadMockConfig() Config {
 						},
 						// DisableGotifyForSuccessfulCheck: false,
 					},
+					{
+						Name:     "runcmdcheck",
+						Schedule: "*/5 * * * * *",
+						Options: map[string]string{
+							"cmd":         "ping -c 1 127.0.0.1",
+							"printoutput": "false",
+						},
+						// DisableGotifyForSuccessfulCheck: false,
+					},
 				},
 			},
 		},
