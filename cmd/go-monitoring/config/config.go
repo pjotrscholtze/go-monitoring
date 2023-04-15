@@ -1,9 +1,10 @@
 package config
 
 type Check struct {
-	Name     string
-	Schedule string
-	Options  map[string]string
+	Name                            string
+	Schedule                        string
+	Options                         map[string]string
+	DisableGotifyForSuccessfulCheck bool
 }
 
 type Target struct {
@@ -12,12 +13,22 @@ type Target struct {
 	Checks                []Check
 }
 
+type GotifyConfig struct {
+	GotifyURL        string
+	ApplicationToken string
+}
+
 type Config struct {
 	Targets []Target
+	Gotify  *GotifyConfig
 }
 
 func LoadMockConfig() Config {
 	return Config{
+		// Gotify: &GotifyConfig{
+		// 	GotifyURL:        "http://localhost:8080",
+		// 	ApplicationToken: "Aq9Br2z3.2qYcS9",
+		// },
 		Targets: []Target{
 			{
 				Name:                  "Test",
@@ -29,6 +40,7 @@ func LoadMockConfig() Config {
 						Options: map[string]string{
 							"timeoutInSeconds": "3",
 						},
+						// DisableGotifyForSuccessfulCheck: false,
 					},
 				},
 			},
