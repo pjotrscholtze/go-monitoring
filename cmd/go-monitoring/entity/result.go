@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"fmt"
+	"log"
 	"time"
 )
 
@@ -44,7 +44,7 @@ func (r *result) Log() {
 	if r.success {
 		success = "passed"
 	}
-	fmt.Printf("Check '%s' %s@%s, with message: %s.%s (took: %s)\n", r.checkName, success, r.lastCheck.Format(time.RFC3339), r.message, errorMessage, r.executionTime.String())
+	log.Printf("Check '%s' %s@%s, with message: %s.%s (took: %s)\n", r.checkName, success, r.lastCheck.Format(time.RFC3339), r.message, errorMessage, r.executionTime.String())
 }
 func NewOkResult(checkName string, message string, executionTime time.Duration) Result {
 	return NewOkResultWithAttributes(checkName, message, map[string]interface{}{}, executionTime)

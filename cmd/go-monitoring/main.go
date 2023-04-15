@@ -66,14 +66,17 @@ func (m *mock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// if len(os.Args) != 2 {
-	// 	println("Usage: app <config-path.yaml>")
-	// 	return
-	// }
-	// path := os.Args[1]
+	if len(os.Args) != 2 {
+		println("Usage: app <config-path.yaml>")
+		return
+	}
+	path := os.Args[1]
 	log.Println("Starting Go monitoring server")
 
-	// log.Printf("Loading config: %s\n", path)
+	log.Printf("Loading config: %s\n", path)
+	c := config.LoadConfigFromPath(path)
+	// c := config.LoadConfigFromPath("../../example/example.yaml")
+	// c := config.LoadMockConfig()
 
 	swaggerSpec, err := loads.Embedded(restapi.SwaggerJSON, restapi.FlatSwaggerJSON)
 	if err != nil {
@@ -83,8 +86,7 @@ func main() {
 	api := operations.NewGoMonitoringAPI(swaggerSpec)
 	server := restapi.NewServer(api)
 	cui := informer.NewCheckUpdateInformer()
-	tcr := repo.NewTargetCheckRepoInMemory(5)
-	c := config.LoadMockConfig()
+	tcr := repo.NewTargetCheckRepoInMemory(c.MaxHistoryInMemory)
 	var gs gotifyservice.GotifyService
 	if c.Gotify != nil {
 		gs = gotifyservice.NewGotifyService(c.Gotify.GotifyURL, c.Gotify.ApplicationToken)
@@ -141,8 +143,8 @@ func main() {
 	}
 
 	server.ConfigureAPI()
-	server.Port = 3000
-	server.Host = "0.0.0.0"
+	server.Port = c.HTTPPort
+	server.Host = c.HTTPHost
 
 	t := &mock{
 		next: api.Serve(nil),

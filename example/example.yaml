@@ -1,0 +1,15 @@
+MaxHistoryInMemory: 10
+HTTPPort: 3000
+HTTPHost: "0.0.0.0"
+Gotify:
+  GotifyURL:        "http://localhost:8080"
+  ApplicationToken: "Aq9Br2z3.2qYcS9"
+Targets:
+- Name:                  "Test"
+  ConnectionInformation: "https://www.pjotrs.nl"
+  Checks:
+  - Name:     "httpupcheck"
+    Schedule: "*/10 * * * * *"
+    Options:
+      timeoutInSeconds: "3"
+    DisableGotifyForSuccessfulCheck: false
