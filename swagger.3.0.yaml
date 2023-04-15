@@ -3,7 +3,7 @@ info:
   title: Go monitoring
   version: 1.0.0
 paths:
-  /check:
+  /api/check:
     get:
       summary: List all checks
       operationId: listAllChecks
@@ -16,7 +16,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Check'
-  /check/{targetName}/{checkName}:
+  /api/check/{targetName}/{checkName}:
     get:
       summary: Get historical data of a check
       operationId: getTargetChecks

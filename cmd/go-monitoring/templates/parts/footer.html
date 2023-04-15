@@ -1,0 +1,205 @@
+{{ define "footer" }}
+<script>
+    document.isUpdating = false;
+    document.state = {
+        _state: {},
+        _listeners: {},
+        update: (path, data) => {
+            document.state._state[path] = data;
+            if (document.state._listeners[path] !== undefined ) {
+                document.state._listeners[path].forEach(element => {
+                    element(data);
+                });
+            }
+        },
+        registerListener: (path, fn) => {
+            if (!document.state._listeners.hasOwnProperty(path)) {
+                document.state._listeners[path] = [];
+            }
+            document.state._listeners[path].push(fn);
+        }
+    };
+
+    let routes = {
+        "/check/": () => {
+            document.state.registerListener("check", (data) => {
+                let TABLE_COLUMN_COUNT = 5;
+                // Prepare data.
+                let tableContents = [];
+                data.reverse();
+                for (let i in data) {
+                    let row = data[i];
+                    tableContents.push({
+                        "i": i,
+                        ...row
+                    });
+                }
+
+                // Update Table rows count to match.
+                while (document.getElementById("targetcheckdetails").querySelectorAll("tbody tr").length > tableContents.length) {
+                    let lastIndex = document.getElementById("targetcheckdetails").querySelectorAll("tbody tr").length - 1;
+                    document.getElementById("targetcheckdetails").querySelectorAll("tbody tr")[lastIndex].remove();
+                }
+                while (document.getElementById("targetcheckdetails").querySelectorAll("tbody tr").length < tableContents.length) {
+                    let tr = document.createElement("tr");
+                    for (let i = 0; i < TABLE_COLUMN_COUNT; i++) {
+                        let elem = document.createElement(i == 0 ? "th" : "td");
+                        if (i == 0) {
+                            elem.setAttribute("scope", "row");
+                        }
+                        tr.appendChild(elem);
+                    }
+                    document.createElement("td");
+                    document.getElementById("targetcheckdetails").querySelector("tbody").appendChild(tr);
+                }
+                // Update table contents.
+                let rows = document.getElementById("targetcheckdetails").querySelectorAll("tbody tr");
+                function updateCellIfRequired(cells, i, text) {
+                    if (cells[i].innerText != text) {
+                        cells[i].innerText = text;
+                    }
+                }
+                tableContents.forEach((elem) => {
+
+                    let cells = rows[elem.i].querySelectorAll("th, td");
+                    updateCellIfRequired(cells, 0, "" + (1 + 1 * elem.i));
+                    updateCellIfRequired(cells, 1, elem.Error);
+                    updateCellIfRequired(cells, 2, elem.LastCheck);
+                    updateCellIfRequired(cells, 3, elem.Message);
+                    updateCellIfRequired(cells, 4, elem.Success);
+                })
+            });
+        },
+        "/": () => {
+            document.state.registerListener("checks", (data) => {
+                let TABLE_COLUMN_COUNT = 6;
+                // Prepare data.
+                let tableContents = [];
+                for (let i in data) {
+                    let row = data[i];
+                    tableContents.push({
+                        "i": i,
+                        "target": row.TargetName,
+                        "check": row.CheckName,
+                        "status": row.LastCheckResult.Success ? "Passed" : ("Not passed, " + row.LastCheckResult.Message),
+                        "schedule": row.Schedule,
+                        "lastCheck": row.LastCheckResult.LastCheck
+                    });
+                }
+
+                // Update Table rows count to match.
+                while (document.getElementById("targetchecks").querySelectorAll("tbody tr").length > tableContents.length) {
+                    let lastIndex = document.getElementById("targetchecks").querySelectorAll("tbody tr").length - 1;
+                    document.getElementById("targetchecks").querySelectorAll("tbody tr")[lastIndex].remove();
+                }
+                while (document.getElementById("targetchecks").querySelectorAll("tbody tr").length < tableContents.length) {
+                    let tr = document.createElement("tr");
+                    for (let i = 0; i < TABLE_COLUMN_COUNT; i++) {
+                        let elem = document.createElement(i == 0 ? "th" : "td");
+                        if (i == 0) {
+                            elem.setAttribute("scope", "row");
+                        }
+                        tr.appendChild(elem);
+                    }
+                    document.createElement("td");
+                    document.getElementById("targetchecks").querySelector("tbody").appendChild(tr);
+                }
+                // Update table contents.
+                let rows = document.getElementById("targetchecks").querySelectorAll("tbody tr");
+                function updateCellIfRequired(cells, i, text) {
+                    if (cells[i].innerText != text) {
+                        cells[i].innerText = text;
+                    }
+                }
+                tableContents.forEach((elem) => {
+
+                    let cells = rows[elem.i].querySelectorAll("th, td");
+                    for (let celli in cells) {
+                        if (celli == 5) continue;
+                        cells[celli].onclick = (event) => {
+                            window.location.pathname = "/check/" + elem.target+"/" + elem.check;
+                        };
+                    }
+                    updateCellIfRequired(cells, 0, "" + (1 + 1 * elem.i));
+                    updateCellIfRequired(cells, 1, elem.target);
+                    updateCellIfRequired(cells, 2, elem.check);
+                    updateCellIfRequired(cells, 3, elem.status);
+                    updateCellIfRequired(cells, 4, elem.schedule);
+                    updateCellIfRequired(cells, 5, elem.lastCheck);
+                })
+            });
+        },
+    };
+    for (let route in routes) {
+        if (!window.location.pathname.startsWith(route)) continue;
+        routes[route]();
+        break;
+    }
+
+    function updateState() {
+        if (document.isUpdating) return;
+        document.isUpdating = true;
+        let routeApiMapping = {
+            "/check/": () => {
+                let parts = window.location.pathname.split("/");
+                if (parts.length < 4) {
+                    return routeApiMapping["/"]();
+                }
+                fetch("/api/check/" + parts[2] + "/" + parts[3], {
+                    headers: {
+                        'accept': 'application/json',
+                    }
+                }).then((response) => {
+                    return response.json();
+                }).then((response) => {
+                    document.state.update("check", response);
+                    document.isUpdating = false;
+                }).catch((e)=>{
+                    console.log("Failed to update check specific information", e)
+                    document.isUpdating = false;
+                });
+            },
+            "/": () => {
+                fetch("/api/check", {
+                    headers: {
+                        'accept': 'application/json',
+                    }
+                }).then((response) => {
+                    return response.json();
+                }).then((response) => {
+                    document.state.update("checks", response);
+                    document.isUpdating = false;
+                }).catch((e)=>{
+                    console.log("Failed to update check information", e)
+                    document.isUpdating = false;
+                });
+            },
+        };
+        for (let route in routeApiMapping) {
+            if (!window.location.pathname.startsWith(route)) continue;
+            routeApiMapping[route]();
+            break;
+        }
+        // fetch("/check", {
+        //     headers: {
+        //         'accept': 'application/json',
+        //     }
+        // }).then((response) => {
+        //     return response.json();
+        // }).then((response) => {
+        //     document.state.update("repos", response);
+        //     // document.querySelector("pre").innerHTML = JSON.stringify(response, null, 2);
+        //     document.isUpdating = false;
+        // }).catch((e)=>{
+        //     console.log("Failed to update repos information", e)
+        //     document.isUpdating = false;
+        // });
+    }
+    updateState();
+    setInterval(updateState, 1000);
+</script>t
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
+{{end}}

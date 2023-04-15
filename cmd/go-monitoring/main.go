@@ -117,11 +117,11 @@ func main() {
 	server.Port = 3000
 	server.Host = "0.0.0.0"
 
-	// t := &mock{
-	// 	next: api.Serve(nil),
-	// 	mux:  controller.RegisterUIController(),
-	// }
-	// server.SetHandler(t)
+	t := &mock{
+		next: api.Serve(nil),
+		mux:  controller.RegisterUIController(),
+	}
+	server.SetHandler(t)
 
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)

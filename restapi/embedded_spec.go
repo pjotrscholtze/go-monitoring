@@ -23,6 +23,7 @@ func init() {
     "title": "Go monitoring",
     "version": "1.0.0"
   },
+  "basePath": "/api",
   "paths": {
     "/check": {
       "get": {
@@ -128,6 +129,7 @@ func init() {
     "title": "Go monitoring",
     "version": "1.0.0"
   },
+  "basePath": "/api",
   "paths": {
     "/check": {
       "get": {
